@@ -1,0 +1,29 @@
+
+--直接将入参转换为JSON
+SELECT Takedept_Name, Grdrug_Drugvr, Pati_Name, Pati_Sex, Pati_Age, Pati_Bed, round(SUM(CAST(Min_Unit_Quantity as numeric)), 2) Min_Unit_Quantity, Min_Unit, Drug_Name, Drug_Strength, Medication_Frequency, Rcpdtl_Drask, usage,Single,  Once_Dosa_Unit, inpatient_num
+FROM (
+select 
+json_array_elements(json_string)->>'Takedept_Name' Takedept_Name
+, json_array_elements(json_string)->>'Grdrug_Drugvr' Grdrug_Drugvr
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Pati_Name' Pati_Name
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Pati_Sex' Pati_Sex
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Pati_Age' Pati_Age
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Pati_Bed' Pati_Bed
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Min_Unit_Quantity' Min_Unit_Quantity
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Min_Unit' Min_Unit
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Drug_Name' Drug_Name
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Drug_Strength' Drug_Strength
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Medication_Frequency' Medication_Frequency
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Rcpdtl_Drask' Rcpdtl_Drask
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Usage' usage
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'First_Time' First_Time
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Single' Single
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Once_Dosa_Unit' Once_Dosa_Unit
+, json_array_elements(json_array_elements(json_string)->'Detail') ->> 'Inpatient_Num' Inpatient_Num
+from 
+(
+	select ('' || {:CS} || '') ::json json_string
+) as table_1) ZZ
+GROUP BY  substring(ZZ.First_Time, 1, 4), Takedept_Name, Grdrug_Drugvr, Pati_Name, Pati_Sex,Pati_Age, Pati_Bed, Min_Unit_Quantity, Min_Unit, Drug_Name, Drug_Strength, Medication_Frequency, Rcpdtl_Drask, usage,Single,  Once_Dosa_Unit, inpatient_num
+ORDER BY CAST(Pati_Bed AS INT) ASC
+;
